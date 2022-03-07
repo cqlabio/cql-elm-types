@@ -5,12 +5,14 @@
   },
   "devDependencies": {
     "@types/node": "^17.0.21",
+    "prettier": "^2.5.1",
     "ts-node": "^10.2.1",
     "tsd": "^0.19.1",
     "typescript": "^4.6.2"
   },
   "scripts": {
     "prepare": "ts-node ./prepare.ts",
-    "generate": "ts-node ./src/generate.ts"
+    "generate": "ts-node ./src/generate.ts",
+    "prettify": "prettier --write 'index.d.ts' 'prepare.ts' 'src/**/*.{js,ts,jsx,tsx}'"
   }
 }

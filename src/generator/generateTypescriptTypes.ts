@@ -6,8 +6,8 @@ import SimpleType from "../processor/nodes/simpleType";
 import PropertyType from "../processor/nodes/propertyType";
 import Processor from "../processor/processor";
 
-function createAbstractName (className: string): string {
-  return `Abstract${className}`
+function createAbstractName(className: string): string {
+  return `Abstract${className}`;
 }
 
 // Creates a comment with the description
@@ -19,32 +19,40 @@ function generateAnnotation(annotation: string): string {
   return `\n/*\n${annotationInit}\n*/\n`;
 }
 
-
-function generateProperties(properties: PropertyType[], sourceComplexType?: ComplexType):string {
+function generateProperties(
+  properties: PropertyType[],
+  sourceComplexType?: ComplexType
+): string {
   let propertyText = "";
 
-  let typeNameAdded = false
+  let typeNameAdded = false;
 
   // Auto Add a type property for discriminator
   // This does not apply to the root Element node for some reason???
   if (sourceComplexType) {
     if (!sourceComplexType.isAbstract()) {
-      const parentsWithoutElement = sourceComplexType.inheritanceHiearchy().filter(n =>  {
-        return !n.isAbstract() || (n.isAbstract() && n.getName() !== 'Element')
-      })
-      
+      const parentsWithoutElement = sourceComplexType
+        .inheritanceHiearchy()
+        .filter((n) => {
+          return (
+            !n.isAbstract() || (n.isAbstract() && n.getName() !== "Element")
+          );
+        });
+
       if (parentsWithoutElement.length) {
-        typeNameAdded = true
-        propertyText += `  type: "${sourceComplexType.getName()}" ;\n`
+        typeNameAdded = true;
+        propertyText += `  type: "${sourceComplexType.getName()}" ;\n`;
       }
     }
   }
 
   properties.forEach((property) => {
     // There  is one case where types overlap, the ELM JSON seems to take the string version
-    if (typeNameAdded && property.getName() === 'type') {
-      console.log(`INFO: ${sourceComplexType?.getName()} has "type" property conflict`)
-      return
+    if (typeNameAdded && property.getName() === "type") {
+      console.log(
+        `INFO: ${sourceComplexType?.getName()} has "type" property conflict`
+      );
+      return;
     }
     propertyText += `  ${property.getName()}`;
 
@@ -75,49 +83,42 @@ export function generateInterface(complexType: ComplexType): string {
   let interfaceString = generateAnnotation(complexType.getAnnotation());
 
   // Give abstract classes an interface name such as AbstractExpression
-  // so that Expression can be used to define the type for polymorphism discriminators 
-  const interfaceName = complexType.isAbstract() 
+  // so that Expression can be used to define the type for polymorphism discriminators
+  const interfaceName = complexType.isAbstract()
     ? createAbstractName(complexType.getName())
-    : complexType.getName()
+    : complexType.getName();
 
   interfaceString += `interface ${interfaceName}`;
 
   // Can only inherit from abstract classes or else type descriminators will collide
   if (complexType.inheritsFrom()) {
-    const abstractParent = complexType.getFirstAbstractParent()
+    const abstractParent = complexType.getFirstAbstractParent();
 
     if (!abstractParent) {
-      throw new Error(`There should be at least one abstract parent for ${complexType.getName()}`)
+      throw new Error(
+        `There should be at least one abstract parent for ${complexType.getName()}`
+      );
     }
-    // const parentName = complexType.inheritsFrom()
-    // const parent = parentName ? complexType.classLookup[parentName]: null
-    
-    interfaceString += ` extends ${createAbstractName(abstractParent.getName())}`;
 
-    // if (parent instanceof ComplexType && parent.isAbstract()) {
-      
-    // } else {
-    //   interfaceString += ` extends ${complexType.inheritsFrom()}`;
-    // }
-
+    interfaceString += ` extends ${createAbstractName(
+      abstractParent.getName()
+    )}`;
   }
 
   interfaceString += " {\n";
 
-  const propertyText  = generateProperties(complexType.getProperties(), complexType);
+  const propertyText = generateProperties(
+    complexType.getProperties(),
+    complexType
+  );
   interfaceString += propertyText;
 
   interfaceString += "}\n";
 
-  // Order backwards because it's reverse at top of file
-  // allClasses.forEach((importClass) => {
-  //   file = `import ${importClass} from './${importClass}'\n` + file;
-  // });
-
-  return interfaceString ;
+  return interfaceString;
 }
 
-export function generateEnumFromSimpleType(simpleType: SimpleType): string{
+export function generateEnumFromSimpleType(simpleType: SimpleType): string {
   let file = generateAnnotation(simpleType.getAnnotation());
 
   const options = simpleType
@@ -132,52 +133,52 @@ export function generateEnumFromSimpleType(simpleType: SimpleType): string{
   file += `type ${simpleType.getName()} = ${options}\n`;
   // file += `export default ${simpleType.getName()}`;
 
-  return file
+  return file;
 }
 
-export function generateEnumForAbstractClasses(processor: Processor): string{
+export function generateEnumForAbstractClasses(processor: Processor): string {
+  const lookup: Record<string, ComplexType[]> = {};
 
-  const lookup: Record<string, ComplexType[]> = {}
-
-  processor.getComplexTypes().forEach(complexType => {
-    const abstractParent = complexType.getFirstAbstractParent()
+  processor.getComplexTypes().forEach((complexType) => {
+    const abstractParent = complexType.getFirstAbstractParent();
     if (abstractParent) {
-      const abstractParentName = abstractParent.getName()
+      const abstractParentName = abstractParent.getName();
       if (!lookup[abstractParentName]) {
-        lookup[abstractParentName] = []
+        lookup[abstractParentName] = [];
       }
-      lookup[abstractParentName].push(complexType)
+      lookup[abstractParentName].push(complexType);
     }
-  })
+  });
 
-  let section = ''
+  let section = "";
 
   Object.entries(lookup).forEach(([parentName, types]) => {
-    section += `\ntype ${parentName} = ${types.map(cType => cType.getName()).join(' |')}`
-  })
+    section += `\ntype ${parentName} = ${types
+      .map((cType) => cType.getName())
+      .join(" | ")}`;
+  });
 
-  return section
+  return section;
 }
 
-export function generateTypescriptTypes (processor: Processor): string {
-
+export function generateTypescriptTypes(processor: Processor): string {
   let mainFile = `
 export = ELM;
 export as namespace ELM;
 
-declare namespace ELM {`
+declare namespace ELM {`;
 
-  processor.getComplexTypes().forEach(complexType => {
-    mainFile += generateInterface(complexType)
-  })
+  processor.getComplexTypes().forEach((complexType) => {
+    mainFile += generateInterface(complexType);
+  });
 
-  processor.getSimpleTypes().forEach(simpleType => {
-    mainFile += generateEnumFromSimpleType(simpleType)
-  })
+  processor.getSimpleTypes().forEach((simpleType) => {
+    mainFile += generateEnumFromSimpleType(simpleType);
+  });
 
-  mainFile += generateEnumForAbstractClasses(processor)
+  mainFile += generateEnumForAbstractClasses(processor);
 
-  mainFile += '\n}'
+  mainFile += "\n}";
 
   return mainFile.trim();
 }

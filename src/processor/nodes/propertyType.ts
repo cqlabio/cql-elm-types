@@ -1,7 +1,6 @@
 import Processor from "../processor";
 import ComplexType from "./complexType";
 
-
 export default class PropertyType {
   node: Record<string, any>;
   processor: Processor;
@@ -19,42 +18,47 @@ export default class PropertyType {
     const { type } = this.node;
 
     if (type === "xs:string") {
-      return "string"
+      return "string";
     } else if (type === "xs:boolean") {
-      return "boolean"
+      return "boolean";
     } else if (type === "xs:decimal") {
-      return "number"
+      return "number";
     } else if (type === "xs:anyURI") {
-      return "string"
+      return "string";
     } else if (type === "xs:QName") {
-      return "string"
+      return "string";
     } else if (["xs:anySimpleType", "xs:anyType"].includes(type)) {
-      return "any"
+      return "any";
     }
 
     // Check for a linked property
-    const found = this.processor.getComplexTypeByName(type) || this.processor.getSimpleTypeByName(type)
-    
+    const found =
+      this.processor.getComplexTypeByName(type) ||
+      this.processor.getSimpleTypeByName(type);
+
     if (!found) {
       console.log(`WARNING: Could not find type: ${type}`);
-      return "any"
+      return "any";
     }
 
-    const foundNames = [found.getName()]
+    const foundNames = [found.getName()];
 
-
-    this.processor.getComplexTypes().filter(cType => {
-      if (cType.inheritanceHiearchy().filter(p => !p.isAbstract()).includes(found as ComplexType)) {
-        foundNames.push(cType.getName())
+    this.processor.getComplexTypes().filter((cType) => {
+      if (
+        cType
+          .inheritanceHiearchy()
+          .filter((p) => !p.isAbstract())
+          .includes(found as ComplexType)
+      ) {
+        foundNames.push(cType.getName());
       }
-    })
+    });
 
     if (foundNames.length === 1) {
-      return foundNames[0]
+      return foundNames[0];
     } else {
-      return `(${foundNames.join(' | ')})`
+      return `(${foundNames.join(" | ")})`;
     }
-
 
     // return { type: found.getName(), isLinked: true };
   };

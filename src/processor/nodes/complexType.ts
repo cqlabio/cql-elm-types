@@ -41,9 +41,13 @@ export default class ComplexType extends BaseType {
     const extension = this._getExtension();
 
     if (extension) {
-      const parent = this.processor.getComplexTypeByName(extension.base)
+      const parent = this.processor.getComplexTypeByName(extension.base);
       if (extension.base && !parent) {
-        console.log(`WARNING: "${this.getName()}" could not find parent "${extension.base}"`);
+        console.log(
+          `WARNING: "${this.getName()}" could not find parent "${
+            extension.base
+          }"`
+        );
         return null;
       }
       return parent;
@@ -51,87 +55,53 @@ export default class ComplexType extends BaseType {
     return null;
   };
 
-  inheritanceHiearchy = () : ComplexType[] => {
-    const hiearchy = []
+  inheritanceHiearchy = (): ComplexType[] => {
+    const hiearchy = [];
 
     function recurse(node: ComplexType) {
-      const parent = node.inheritsFrom()
+      const parent = node.inheritsFrom();
       if (parent) {
-        hiearchy.unshift(parent)
-        recurse(parent)
+        hiearchy.unshift(parent);
+        recurse(parent);
       }
     }
 
-    recurse(this)
+    recurse(this);
 
-    return hiearchy
-  }
+    return hiearchy;
+  };
 
   getProperties = (): PropertyType[] => {
     const attrProperties = this._getAttributeProperties();
     const extensionProperties = this._getExtensionProperties();
 
-    let properties =  [...attrProperties, ...extensionProperties]
-  
+    let properties = [...attrProperties, ...extensionProperties];
+
     // Instead of inheriting from non-abstract parents, we simply duplicate the properties of those
-    // parents. This only happens a few times and is a much cleaner way to handle it than 
+    // parents. This only happens a few times and is a much cleaner way to handle it than
     // the alternative approach.
-    const nonAbstractParents = this.inheritanceHiearchy().filter(parent => !parent.isAbstract())
-    nonAbstractParents.forEach(parent =>  {
-      console.log(`INFO: Merging properties into ${this.getName()} from parent ${parent.getName()}`)
-      properties.push(...parent.getProperties())
-    })
+    const nonAbstractParents = this.inheritanceHiearchy().filter(
+      (parent) => !parent.isAbstract()
+    );
+    nonAbstractParents.forEach((parent) => {
+      console.log(
+        `INFO: Merging properties into ${this.getName()} from parent ${parent.getName()}`
+      );
+      properties.push(...parent.getProperties());
+    });
 
-
-
-
-
-    // if (!this.isAbstract()) {
-    //   properties.push(new PropertyDiscriminator(this.getName()))
-    // }
-
-    
-
-
-    // const parentName = this.inheritsFrom()
-    // const parent = parentName ? this.classLookup[parentName]: null
-
-    // if (parent instanceof ComplexType && parent.isAbstract()) {
-
-    //   if (!this.isAbstract() && parentName !== 'Element') {
-
-
-    //     properties = properties.filter(prop => {
-    //       if ( prop.getName() === 'type') {
-    //         console.log(`Warning: "type" was overwritten on interface ${this.getName()}`)
-    //       }
-    //       return prop.getName() !== 'type'
-    //     })
-
-        
-    //     properties.unshift(
-    //       new PropertyType({
-    //         name: 'type',
-    //         type: 'self',
-    //         self: `"${this.getName()}"`,
-    //         use: "required",
-    //       }, this.processor)
-    //     )
-    //   }
-    // }
-
-    return properties
+    return properties;
   };
 
   getFirstAbstractParent(): ComplexType | null {
-    const parents = this.inheritanceHiearchy()
+    const parents = this.inheritanceHiearchy();
     // Loop backwards through hiearchy chain and get first abstract type
-    for (let i = parents.length -1; i>=0; i--) {
+    for (let i = parents.length - 1; i >= 0; i--) {
       if (parents[i].isAbstract()) {
-        return parents[i]
+        return parents[i];
       }
     }
-    return null
+    return null;
   }
 
   _getComplexContent() {
