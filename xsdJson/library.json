@@ -1,0 +1,338 @@
+{
+  "xs:schema": {
+    "xmlns:xs": "http://www.w3.org/2001/XMLSchema",
+    "xmlns": "urn:hl7-org:elm:r1",
+    "xmlns:sch": "http://purl.oclc.org/dsdl/schematron",
+    "targetNamespace": "urn:hl7-org:elm:r1",
+    "elementFormDefault": "qualified",
+    "xs:annotation": {
+      "xs:documentation": "This file defines the root library type and element."
+    },
+    "xs:include": {
+      "schemaLocation": "clinicalexpression.xsd"
+    },
+    "xs:complexType": [
+      {
+        "name": "VersionedIdentifier",
+        "xs:annotation": {
+          "xs:documentation": "VersionedIdentifier is composed of three parts: (1) an optional system, or\n        namespace, which provides a globally unique, stable scope for the identifier,\n        (2) an identifier which identifies the set of all versions of a given resource, and\n        (3) the actual version of the instance of interest in this set. The VersionedIdentifier\n        therefore points to an individual 'versioned' instance of a resource such as the third\n        version of a library."
+        },
+        "xs:attribute": [
+          {
+            "name": "id",
+            "type": "xs:string"
+          },
+          {
+            "name": "system",
+            "type": "xs:string",
+            "use": "optional"
+          },
+          {
+            "name": "version",
+            "type": "xs:string",
+            "use": "optional"
+          }
+        ]
+      },
+      {
+        "name": "UsingDef",
+        "xs:annotation": {
+          "xs:documentation": "Defines a data model that is available within the artifact."
+        },
+        "xs:complexContent": {
+          "xs:extension": {
+            "base": "Element",
+            "xs:attribute": [
+              {
+                "name": "localIdentifier",
+                "type": "xs:string",
+                "use": "required"
+              },
+              {
+                "name": "uri",
+                "type": "xs:anyURI",
+                "use": "required",
+                "xs:annotation": {
+                  "xs:documentation": "The URI of the model that is being referenced. This URL must also be\n              defined as a namespace in the root element of the document to allow for elements of\n              the model to be referenced within the artifact."
+                }
+              },
+              {
+                "name": "version",
+                "type": "xs:string",
+                "use": "optional"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "name": "IncludeDef",
+        "xs:annotation": {
+          "xs:documentation": "Includes a library for use within the artifact."
+        },
+        "xs:complexContent": {
+          "xs:extension": {
+            "base": "Element",
+            "xs:attribute": [
+              {
+                "name": "localIdentifier",
+                "type": "xs:string",
+                "use": "required",
+                "xs:annotation": {
+                  "xs:documentation": "A unique name within this artifact for the library reference. This\n              name is used within this artifact to reference components of this\n              library."
+                }
+              },
+              {
+                "name": "mediaType",
+                "type": "xs:anyURI",
+                "use": "optional",
+                "default": "application/elm+xml",
+                "xs:annotation": {
+                  "xs:documentation": "Defines the type of the library. If this attribute is omitted, the\n              library is assumed to be an ELM library artifact."
+                }
+              },
+              {
+                "name": "path",
+                "type": "xs:anyURI",
+                "use": "required",
+                "xs:annotation": {
+                  "xs:documentation": "Defines the path to the library."
+                }
+              },
+              {
+                "name": "version",
+                "type": "xs:string",
+                "use": "optional",
+                "xs:annotation": {
+                  "xs:documentation": "Optionally defines the required version number of the referenced\n              library."
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "name": "ContextDef",
+        "xs:annotation": {
+          "xs:documentation": "The ContextDef type defines a context definition statement. Note that this is a placeholder for the context statement within the library. The effect of the context definition is applied by the translator to the definitions that follow."
+        },
+        "xs:complexContent": {
+          "xs:extension": {
+            "base": "Element",
+            "xs:attribute": {
+              "name": "name",
+              "type": "xs:string"
+            }
+          }
+        }
+      },
+      {
+        "name": "Library",
+        "xs:annotation": {
+          "xs:documentation": "A Library is an instance of a CQL-ELM library."
+        },
+        "xs:complexContent": {
+          "xs:extension": {
+            "base": "Element",
+            "xs:sequence": {
+              "xs:element": [
+                {
+                  "name": "identifier",
+                  "type": "VersionedIdentifier",
+                  "xs:annotation": {
+                    "xs:documentation": "The identifier element defines a unique identifier for this library,\n\t\t\t\t\t\t\t\tand optionally, a system (or namespace) and version."
+                  }
+                },
+                {
+                  "name": "schemaIdentifier",
+                  "type": "VersionedIdentifier",
+                  "xs:annotation": {
+                    "xs:documentation": "This is the identifier of the XML schema (and its version) which\n                governs the structure of this Library."
+                  }
+                },
+                {
+                  "name": "usings",
+                  "minOccurs": "0",
+                  "xs:annotation": {
+                    "xs:documentation": "Set of data models referenced in the Expression objects in this\n                knowledge artifact."
+                  },
+                  "xs:complexType": {
+                    "xs:sequence": {
+                      "xs:element": {
+                        "name": "def",
+                        "type": "UsingDef",
+                        "maxOccurs": "unbounded",
+                        "xs:annotation": {
+                          "xs:documentation": "A reference to a data model that is used in the artifact,\n                      e..g., the Virtual Medical Record."
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "name": "includes",
+                  "minOccurs": "0",
+                  "xs:annotation": {
+                    "xs:documentation": "Set of libraries referenced by this artifact. Components of\n                referenced libraries may be used within this artifact."
+                  },
+                  "xs:complexType": {
+                    "xs:sequence": {
+                      "xs:element": {
+                        "name": "def",
+                        "type": "IncludeDef",
+                        "maxOccurs": "unbounded",
+                        "xs:annotation": {
+                          "xs:documentation": "A reference to a library whose components can be used within\n                      the artifact."
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "name": "parameters",
+                  "minOccurs": "0",
+                  "maxOccurs": "1",
+                  "$t": "",
+                  "xs:annotation": {
+                    "xs:documentation": "The parameters defined within this library."
+                  },
+                  "xs:complexType": {
+                    "xs:sequence": {
+                      "xs:element": {
+                        "name": "def",
+                        "type": "ParameterDef",
+                        "minOccurs": "0",
+                        "maxOccurs": "unbounded"
+                      }
+                    }
+                  }
+                },
+                {
+                  "name": "codeSystems",
+                  "minOccurs": "0",
+                  "maxOccurs": "1",
+                  "$t": "",
+                  "xs:annotation": {
+                    "xs:documentation": "The code systems defined within this library."
+                  },
+                  "xs:complexType": {
+                    "xs:sequence": {
+                      "xs:element": {
+                        "name": "def",
+                        "type": "CodeSystemDef",
+                        "minOccurs": "0",
+                        "maxOccurs": "unbounded"
+                      }
+                    }
+                  }
+                },
+                {
+                  "name": "valueSets",
+                  "minOccurs": "0",
+                  "maxOccurs": "1",
+                  "$t": "",
+                  "xs:annotation": {
+                    "xs:documentation": "The value sets defined within this library."
+                  },
+                  "xs:complexType": {
+                    "xs:sequence": {
+                      "xs:element": {
+                        "name": "def",
+                        "type": "ValueSetDef",
+                        "minOccurs": "0",
+                        "maxOccurs": "unbounded"
+                      }
+                    }
+                  }
+                },
+                {
+                  "name": "codes",
+                  "minOccurs": "0",
+                  "maxOccurs": "1",
+                  "$t": "",
+                  "xs:annotation": {
+                    "xs:documentation": "The codes defined within this library."
+                  },
+                  "xs:complexType": {
+                    "xs:sequence": {
+                      "xs:element": {
+                        "name": "def",
+                        "type": "CodeDef",
+                        "minOccurs": "0",
+                        "maxOccurs": "unbounded"
+                      }
+                    }
+                  }
+                },
+                {
+                  "name": "concepts",
+                  "minOccurs": "0",
+                  "maxOccurs": "1",
+                  "$t": "",
+                  "xs:annotation": {
+                    "xs:documentation": "The concepts defined within this library."
+                  },
+                  "xs:complexType": {
+                    "xs:sequence": {
+                      "xs:element": {
+                        "name": "def",
+                        "type": "ConceptDef",
+                        "minOccurs": "0",
+                        "maxOccurs": "unbounded"
+                      }
+                    }
+                  }
+                },
+                {
+                  "name": "contexts",
+                  "minOccurs": "0",
+                  "maxOccurs": "1",
+                  "$t": "",
+                  "xs:annotation": {
+                    "xs:documentation": "The contexts defined within this library."
+                  },
+                  "xs:complexType": {
+                    "xs:sequence": {
+                      "xs:element": {
+                        "name": "def",
+                        "type": "ContextDef",
+                        "minOccurs": "0",
+                        "maxOccurs": "unbounded"
+                      }
+                    }
+                  }
+                },
+                {
+                  "name": "statements",
+                  "minOccurs": "0",
+                  "maxOccurs": "1",
+                  "$t": "",
+                  "xs:annotation": {
+                    "xs:documentation": "The statements section contains the expression and function\n                definitions for the library."
+                  },
+                  "xs:complexType": {
+                    "xs:sequence": {
+                      "xs:element": {
+                        "name": "def",
+                        "type": "ExpressionDef",
+                        "minOccurs": "0",
+                        "maxOccurs": "unbounded"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "xs:element": {
+      "name": "library",
+      "type": "Library",
+      "xs:annotation": {
+        "xs:documentation": "library represents a serialized library of CQL-Epression Logic\n        Model."
+      }
+    }
+  }
+}
