@@ -1,6 +1,6 @@
 import { Library } from '../index';
 
-const library: Library =  {
+export const library: Library =  {
       "annotation" : [ {
          "startLine" : 60,
          "startChar" : 5,

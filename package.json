@@ -5,14 +5,19 @@
   },
   "devDependencies": {
     "@types/node": "^17.0.21",
+    "ajv": "^8.10.0",
     "prettier": "^2.5.1",
     "ts-node": "^10.2.1",
     "tsd": "^0.19.1",
-    "typescript": "^4.6.2"
+    "typescript": "^4.6.2",
+    "typescript-json-schema": "^0.53.0"
   },
   "scripts": {
     "prepare": "ts-node ./prepare.ts",
     "generate": "ts-node ./src/generate.ts",
-    "prettify": "prettier --write 'index.d.ts' 'prepare.ts' 'src/**/*.{js,ts,jsx,tsx}'"
+    "testSchema": "ts-node ./tests/testJsonSchema.ts",
+    "prettify": "prettier --write 'index.d.ts' 'prepare.ts' 'schema.json' '{src,tests}/**/*.{js,ts,jsx,tsx}'",
+    "typeErrors": "tsd",
+    "generateSchema": "npx typescript-json-schema './index.d.ts' '*' --out schema.json"
   }
 }
